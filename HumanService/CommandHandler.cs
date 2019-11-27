@@ -46,6 +46,7 @@ namespace HumanService
       var guildCfg = new Config().Bot.Guilds[ctx.Guild.Id];
       if (msg.HasStringPrefix(guildCfg.Prefix, ref argPos) || msg.HasMentionPrefix(Global.Client.CurrentUser, ref argPos))
       {
+        _ = ctx.Message.DeleteAsync();
         var result = await Service.ExecuteAsync(ctx, argPos, null);
         if (!result.IsSuccess)
         {

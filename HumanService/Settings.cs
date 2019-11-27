@@ -2,13 +2,15 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using HumanService.Announcement;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace HumanService
 {
   [Group("settings"), Alias("s")]
   [RequireContext(ContextType.Guild)]
-  public partial class Settings : ModuleBase<SocketCommandContext>
+  public class Settings : ModuleBase<SocketCommandContext>
   {
 
     #region Announcement
@@ -21,7 +23,6 @@ namespace HumanService
       [Command]
       public async Task GetSettings()
       {
-        _ = Context.Message.DeleteAsync();
         var list = new AnnounceResource().GetAnnouncements(Context.Guild.Id);
         if (list == null)
         {
@@ -56,7 +57,6 @@ namespace HumanService
       [Command("channel"), Alias("ch")]
       public async Task EditChannel(IChannel channel)
       {
-        _ = Context.Message.DeleteAsync();
         var announce = new AnnounceResource();
         var severity = LogSeverity.Info;
         string reply;
@@ -81,7 +81,6 @@ namespace HumanService
       [Command("enable"), Alias("e")]
       public async Task EditState(string name, bool state)
       {
-        _ = Context.Message.DeleteAsync();
         var announce = new AnnounceResource();
         var severity = LogSeverity.Info;
         string reply;
@@ -105,7 +104,6 @@ namespace HumanService
       [Command("message"), Alias("msg")]
       public async Task EditMsg(string name, [Remainder] string msg)
       {
-        _ = Context.Message.DeleteAsync();
         var announce = new AnnounceResource();
         var severity = LogSeverity.Info;
         string reply;
@@ -123,6 +121,126 @@ namespace HumanService
         }
 
         _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, reply, "Settings:Announce:EditMsg", severity));
+
+        await Task.CompletedTask;
+      }
+    }
+
+    #endregion
+
+    #region Welcome
+
+    [Group("welcome"), Alias("w")]
+    public class Welcome : ModuleBase<SocketCommandContext>
+    {
+      [Command]
+      public async Task GetWelcome()
+      {
+        var cfg = new Config().Bot.Guilds[Context.Guild.Id].Welcome;
+        var user = Context.User as SocketGuildUser;
+        var reply = new EmbedBuilder();
+        try
+        {
+          reply.WithAuthor(user.Nickname ?? user.Username, user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl());
+          reply.AddField("Enabled", $"**{cfg.Enabled}**", true);
+          reply.AddField("Time", $"**{cfg.Time}**", true);
+          reply.AddField("Role", "**" + (cfg.BaseRole > 1 ? Context.Guild.GetRole(cfg.BaseRole).Name : "Unspecified") + "**", true);
+          reply.AddField("Message", cfg.Message);
+          reply.WithFooter(Global.FormatTime());
+        }
+        catch (Exception e)
+        {
+          _ = Logger.Instance.Write(new LogException(e, "Settings:Welcome:GetWelcome", LogSeverity.Error));
+          _ = UserExtensions.SendMessageAsync(Context.User, e.Message);
+          return;
+        }
+
+        _ = ReplyAsync("", false, reply.Build());
+        _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, "Called", "Settings:Welcome:GetWelcome"));
+        await Task.CompletedTask;
+      }
+
+      [Command("switch"), Alias("s")]
+      [RequireUserPermission(GuildPermission.Administrator)]
+      public async Task SetState(bool state)
+      {
+        var cfg = new Config();
+        cfg.Bot.Guilds[Context.Guild.Id].Welcome.Enabled = state;
+        if (state && cfg.Bot.Guilds[Context.Guild.Id].Welcome.BaseRole <= 1)
+        {
+          var pos = 0;
+          SocketRole baseRole = null;
+          while (baseRole == null || baseRole.IsManaged || baseRole == Context.Guild.EveryoneRole)
+          {
+            baseRole = Context.Guild.Roles.Where(x => x.Position == pos).First();
+            pos++;
+          }
+          cfg.Bot.Guilds[Context.Guild.Id].Welcome.BaseRole = baseRole.Id;
+        }
+        _ = cfg.Save();
+        var msg = SuccessMsg("Successfully " + (state ? "enabled" : "disabled") + " welcome functionality!");
+        _ = ReplyAsync(msg);
+        _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, msg, "Settings:Welcome:SetState"));
+
+        await Task.CompletedTask;
+      }
+
+      [Command("time"), Alias("t")]
+      [RequireUserPermission(GuildPermission.Administrator)]
+      public async Task SetTime(uint time)
+      {
+        var cfg = new Config();
+        cfg.Bot.Guilds[Context.Guild.Id].Welcome.Time = time;
+        if (time == 0)
+        {
+          cfg.Bot.Guilds[Context.Guild.Id].Welcome.Enabled = false;
+        }
+        _ = cfg.Save();
+
+        var msg = SuccessMsg($"Successfully set welcome time to **{time} minutes**");
+        _ = ReplyAsync(msg);
+        _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, msg, "Settings:Welcome:SetTime"));
+
+        await Task.CompletedTask;
+      }
+
+      [Command("baserole"), Alias("br")]
+      [RequireUserPermission(GuildPermission.Administrator)]
+      public async Task SetBaseRole(IRole role)
+      {
+        string reply;
+        var severity = LogSeverity.Info;
+        if (role.IsManaged || role == Context.Guild.EveryoneRole || Context.Guild.GetRole(role.Id) == null)
+        {
+          severity = LogSeverity.Error;
+          reply = FailMsg($"**{role.Name}** is an invalid base role");
+          _ = UserExtensions.SendMessageAsync(Context.User, reply);
+        }
+        else
+        {
+          var cfg = new Config();
+          cfg.Bot.Guilds[Context.Guild.Id].Welcome.BaseRole = role.Id;
+          _ = cfg.Save();
+          reply = SuccessMsg($"Successfully set base role to **{role.Name}**");
+          _ = ReplyAsync(reply);
+        }
+
+        _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, reply, "Settings:Welcome:SetBaseRole", severity));
+
+        await Task.CompletedTask;
+      }
+
+      [Command("message"), Alias("m")]
+      [RequireUserPermission(GuildPermission.Administrator)]
+      public async Task SetMessage([Remainder] string message = "")
+      {
+        var cfg = new Config();
+        cfg.Bot.Guilds[Context.Guild.Id].Welcome.Message = message;
+        _ = cfg.Save();
+        var reply = SuccessMsg(!string.IsNullOrEmpty(message) ? $"Successfully set new message to: '{message}'" : "A welcome message is no longer sent");
+
+        _ = ReplyAsync(reply);
+        _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, reply, "Settings:Welcome:SetMessage"));
 
         await Task.CompletedTask;
       }

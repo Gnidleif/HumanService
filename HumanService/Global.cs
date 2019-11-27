@@ -1,10 +1,11 @@
 ﻿using Discord.WebSocket;
 using System;
+using System.Globalization;
 using System.IO;
 
 namespace HumanService
 {
-  static class Global
+  public static class Global
   {
     internal static string Resources
     {
@@ -20,5 +21,7 @@ namespace HumanService
     }
 
     internal static DiscordSocketClient Client { get; set; }
+
+    internal static string FormatTime() => DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
   }
 }

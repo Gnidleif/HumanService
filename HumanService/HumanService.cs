@@ -1,6 +1,8 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using HumanService.Timeout;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.ServiceProcess;
 using System.Threading.Tasks;
@@ -31,6 +33,7 @@ namespace HumanService
 
       Global.Client.Log += ClientLog;
       Global.Client.Ready += ClientReady;
+      Global.Client.UserJoined += ClientUserJoined;
 
       if (!await ClientStart())
       {
@@ -59,6 +62,36 @@ namespace HumanService
     }
 
     #region Discord client methods
+
+    private async Task ClientUserJoined(SocketGuildUser arg)
+    {
+      var wCfg = new Config().Bot.Guilds[arg.Guild.Id].Welcome;
+      if (!wCfg.Enabled)
+      {
+        return;
+      }
+      var baseRole = arg.Guild.Roles.First(x => x.Id == wCfg.BaseRole);
+      if (wCfg.Time > 0)
+      {
+        await TimeoutResource.Instance.SetTimeout(arg, wCfg.Time, new List<ulong> { baseRole.Id });
+        _ = TimeoutResource.Instance.Save();
+        if (!string.IsNullOrEmpty(wCfg.Message))
+        {
+          _ = UserExtensions.SendMessageAsync(arg, wCfg.Message);
+        }
+      }
+      else
+      {
+        try
+        {
+          await arg.AddRoleAsync(baseRole);
+        }
+        catch (Exception e)
+        {
+          _ = Logger.Instance.Write(new LogException(e, "HumanService:ClientUserJoined"));
+        }
+      }
+    }
 
     private async Task<bool> ClientStart()
     {

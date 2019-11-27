@@ -15,7 +15,6 @@ namespace HumanService.Administration
       var cfg = new Config();
       if (Context.User.Id == cfg.Bot.Owner)
       {
-        _ = Context.Message.DeleteAsync();
         _ = UserExtensions.SendMessageAsync(Context.User, "Hello, master");
         _ = Logger.Instance.Write(new LogMessage("Master requested owner function", "Administration:OwnMessage"));
       }
@@ -31,7 +30,6 @@ namespace HumanService.Administration
     [RequireUserPermission(GuildPermission.KickMembers)]
     public async Task KickUser(IGuildUser user, [Remainder] string reason = "")
     {
-      _ = Context.Message.DeleteAsync();
       try
       {
         await user.KickAsync(reason);
@@ -39,7 +37,7 @@ namespace HumanService.Administration
       catch (Discord.Net.HttpException e)
       {
         _ = Logger.Instance.Write(new LogException(e, "Administration:KickUser", LogSeverity.Error));
-        _ = UserExtensions.SendMessageAsync(Context.User, e.Message);
+        _ = FailReply(e.Message);
         return;
       }
 
@@ -51,7 +49,6 @@ namespace HumanService.Administration
     [RequireUserPermission(GuildPermission.BanMembers)]
     public async Task BanUser(IGuildUser user, [Remainder] string reason = "")
     {
-      _ = Context.Message.DeleteAsync();
       try
       {
         await user.BanAsync(0, reason);
@@ -59,7 +56,7 @@ namespace HumanService.Administration
       catch (Discord.Net.HttpException e)
       {
         _ = Logger.Instance.Write(new LogException(e, "Administration:BanUser", LogSeverity.Error));
-        _ = Discord.UserExtensions.SendMessageAsync(Context.User, e.Message);
+        _ = FailReply(e.Message);
         return;
       }
 
@@ -72,7 +69,6 @@ namespace HumanService.Administration
     public async Task PurgeChannel(uint count = 1)
     {
       var messagesTask = Context.Channel.GetMessagesAsync(Context.Message.Id, Direction.Before, (int)count).FlattenAsync();
-      _ = Context.Message.DeleteAsync();
       var ch = Context.Channel as ITextChannel;
       _ = ch.DeleteMessagesAsync(await messagesTask);
 
@@ -101,14 +97,16 @@ namespace HumanService.Administration
         reason = "None specified";
       }
 
-      await ReplyAsync("", false, embed.Build());
-      await UserExtensions.SendMessageAsync(Context.User, $"You have been {action} from {Context.Guild.Name}, reason: {reason}");
-      await Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, $"{user.Username} was {action}", "Administration:AdminReply"));
+      _ = ReplyAsync("", false, embed.Build());
+      _ = UserExtensions.SendMessageAsync(user, $"You have been {action} from {Context.Guild.Name}, reason: {reason}");
+      _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, $"{user.Username} was {action}", "Administration:AdminReply"));
+
+      await Task.CompletedTask;
     }
 
     private async Task<IUserMessage> SuccessReply(string msg) => await ReplyAsync($":white_check_mark: {msg}");
 
-    private async Task<IUserMessage> FailedReply(string msg) => await ReplyAsync($":negative_squared_cross_mark: {msg}");
+    private async Task<IUserMessage> FailReply(string msg) => await UserExtensions.SendMessageAsync(Context.User, $":negative_squared_cross_mark: {msg}");
 
     #endregion
   }

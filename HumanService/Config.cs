@@ -15,6 +15,7 @@ namespace HumanService
       if (File.Exists(Path) ? JsonUtil.TryRead(Path, out temp) : JsonUtil.TryWrite(Path, temp))
       {
         Bot = temp;
+        _ = Save();
       }
     }
 
@@ -37,6 +38,15 @@ namespace HumanService
     {
       public string Prefix { get; set; } = "!";
       public char Mark { get; set; } = '⭐';
+      public WelcomeConfig Welcome { get; set; } = new WelcomeConfig();
+    }
+
+    public class WelcomeConfig
+    {
+      public bool Enabled { get; set; } = false;
+      public uint Time { get; set; } = 10;
+      public ulong BaseRole { get; set; } = 0;
+      public string Message { get; set; } = "Welcome! You'll gain full privileges soon.";
     }
   }
 }
