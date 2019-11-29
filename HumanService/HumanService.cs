@@ -95,9 +95,9 @@ namespace HumanService
 
     private async Task<bool> ClientStart()
     {
+      var cfg = new Config();
       try
       {
-        var cfg = new Config();
         await Global.Client.LoginAsync(TokenType.Bot, cfg.Bot.Token);
         await Global.Client.StartAsync();
       }
@@ -106,11 +106,13 @@ namespace HumanService
         _ = Logger.Instance.Write(new LogException(e, "HumanService:ClientStart"));
         return false;
       }
+      await Global.WriteOwner("Bot started");
       return true;
     }
 
     private async Task<bool> ClientStop()
     {
+      await Global.WriteOwner("Bot stopped");
       try
       {
         await Global.Client.LogoutAsync();

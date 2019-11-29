@@ -23,9 +23,9 @@ namespace HumanService.Timeout
       if (File.Exists(Path) ? JsonUtil.TryRead(Path, out temp) : JsonUtil.TryWrite(Path, temp))
       {
         List = new Dictionary<ulong, Dictionary<ulong, Info>>();
-        foreach(var gid in temp.Keys)
+        foreach (var gid in temp.Keys)
         {
-          foreach(var uid in temp[gid].Keys)
+          foreach (var uid in temp[gid].Keys)
           {
             if (!Push(gid, uid))
             {

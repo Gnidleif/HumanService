@@ -12,7 +12,7 @@ namespace HumanService
     public Config()
     {
       var temp = new BotConfig();
-      if (File.Exists(Path) ? JsonUtil.TryRead(Path, out temp) : JsonUtil.TryWrite(Path, temp))
+      if (File.Exists(this.Path) ? JsonUtil.TryRead(this.Path, out temp) : JsonUtil.TryWrite(this.Path, temp))
       {
         Bot = temp;
         _ = Save();
@@ -25,7 +25,7 @@ namespace HumanService
 
     public bool Pop(ulong gid) => Bot.Guilds.Remove(gid);
 
-    public bool Save() => JsonUtil.TryWrite(Path, Bot);
+    public bool Save() => JsonUtil.TryWrite(this.Path, Bot);
 
     public class BotConfig
     {

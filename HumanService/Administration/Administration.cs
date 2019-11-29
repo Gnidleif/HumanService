@@ -1,5 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
+using HumanService.Timeout;
+using System;
 using System.Threading.Tasks;
 
 namespace HumanService.Administration
@@ -76,6 +78,58 @@ namespace HumanService.Administration
       var m = await SuccessReply($"Successfully removed up to {count} messages");
       await Task.Delay(5000);
       _ = m.DeleteAsync();
+    }
+
+    #endregion
+
+    #region Timeout
+
+    [Group("timeout"), Alias("to")]
+    [RequireUserPermission(GuildPermission.Administrator)]
+    public class Timeout : ModuleBase<SocketCommandContext>
+    {
+      [Command]
+      [RequireBotPermission(GuildPermission.ManageRoles)]
+      public async Task TimeoutUser(IGuildUser user, uint minutes = 10, [Remainder] string reason = "")
+      {
+        if (minutes == 0)
+        {
+          minutes = (uint)new Random((int)Global.ToUnixTime()).Next(10, 5000);
+        }
+
+        try
+        {
+          await TimeoutResource.Instance.SetTimeout(user, minutes);
+          if (user.VoiceChannel != null)
+          {
+            await user.ModifyAsync(x => x.Channel = null);
+          }
+        }
+        catch (Exception e)
+        {
+          _ = Logger.Instance.Write(new LogException(e, "Administration:Timeout:TimeoutUser", LogSeverity.Error));
+          _ = UserExtensions.SendMessageAsync(Context.User, e.Message);
+          return;
+        }
+
+        var reply = new EmbedBuilder();
+        reply.WithAuthor(user.Nickname ?? user.Username, user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl());
+        reply.WithDescription("User set on timeout");
+        reply.AddField("Judge", Context.User.Username, true);
+        reply.AddField("Minutes", minutes, true);
+        if (!string.IsNullOrEmpty(reason))
+        {
+          reply.AddField("Reason", reason, true);
+        }
+        else
+        {
+          reason = "None specified";
+        }
+
+        _ = ReplyAsync("", false, reply.Build());
+        _ = UserExtensions.SendMessageAsync(user, $"You have been set on timeout for {minutes} minutes by **{Context.User.Username}**, reason: **{reason}**");
+        _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, $"{user.Username} set on timeout({minutes})", "Administration:SetTimeout"));
+      }
     }
 
     #endregion

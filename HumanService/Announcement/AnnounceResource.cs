@@ -67,7 +67,7 @@ namespace HumanService.Announcement
       {
         { List[gid].Key.ToString(), null },
       };
-      foreach(var a in List[gid].Value.Events)
+      foreach (var a in List[gid].Value.Events)
       {
         result.Add(a.Key, $"**Message**: '{a.Value.Item1}'\n**State**: " + (a.Value.Item2 == true ? "Enabled" : "Disabled"));
       }
@@ -75,7 +75,7 @@ namespace HumanService.Announcement
     }
 
     public bool Has(ulong gid, ulong cid) => List.ContainsKey(gid) && List[gid].Key == cid;
-    
+
     public bool Push(ulong gid, ulong cid)
     {
       if (!List.ContainsKey(gid))
@@ -119,7 +119,7 @@ namespace HumanService.Announcement
         }
       }
     }
-    
+
     private class Info
     {
       public Dictionary<string, Tuple<string, bool>> Events { get; set; } = new Dictionary<string, Tuple<string, bool>>
