@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace HumanService
 {
@@ -25,7 +26,7 @@ namespace HumanService
 
     public bool Pop(ulong gid) => Bot.Guilds.Remove(gid);
 
-    public bool Save() => JsonUtil.TryWrite(this.Path, Bot);
+    public async Task Save() => await Task.Run(() => { JsonUtil.TryWrite(this.Path, Bot); });
 
     public class BotConfig
     {

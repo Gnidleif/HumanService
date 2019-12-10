@@ -1,7 +1,9 @@
-﻿namespace HumanService
+﻿using System.Threading.Tasks;
+
+namespace HumanService
 {
   interface IResource
   {
-    bool Save();
+    Task Save();
   }
 }

@@ -8,14 +8,20 @@ namespace HumanService.Announcement
 {
   public class AnnounceResource : IResource
   {
+    private static readonly Lazy<AnnounceResource> lazy = new Lazy<AnnounceResource>(() => new AnnounceResource());
     private string Path { get; } = Global.Resources + "\\announce.json";
-
     private Dictionary<ulong, KeyValuePair<ulong, Info>> List { get; set; }
 
-    public AnnounceResource()
+    public static AnnounceResource Instance { get { return lazy.Value; } }
+
+    private AnnounceResource()
     {
       Global.Client.UserJoined += Client_UserJoined;
       Global.Client.UserLeft += Client_UserLeft;
+    }
+
+    public void Initialize()
+    {
       var temp = new Dictionary<ulong, KeyValuePair<ulong, Info>>();
       if (File.Exists(Path) ? JsonUtil.TryRead(Path, out temp) : JsonUtil.TryWrite(Path, temp))
       {
@@ -90,7 +96,7 @@ namespace HumanService.Announcement
       return false;
     }
 
-    public bool Save() => JsonUtil.TryWrite(Path, List);
+    public async Task Save() => await Task.Run(() => { JsonUtil.TryWrite(Path, List); });
 
     private async Task Client_UserJoined(SocketGuildUser arg)
     {

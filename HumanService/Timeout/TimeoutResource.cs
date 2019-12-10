@@ -49,12 +49,12 @@ namespace HumanService.Timeout
       }
     }
 
-    public bool Save()
+    public async Task Save()
     {
       var toDelete = List.Keys.Where(x => !List[x].Any()).ToList();
       toDelete.ForEach(x => List.Remove(x));
 
-      return JsonUtil.TryWrite(Path, List);
+      await Task.Run(() => { JsonUtil.TryWrite(Path, List); });
     }
 
     public bool Has(ulong gid, ulong uid) => List.ContainsKey(gid) && List[gid].ContainsKey(uid);
@@ -101,7 +101,7 @@ namespace HumanService.Timeout
       {
         try
         {
-          await UnsetTimeout(user);
+          _ = UnsetTimeout(user);
         }
         catch (Exception e)
         {
@@ -143,8 +143,9 @@ namespace HumanService.Timeout
       catch (Exception e)
       {
         _ = Logger.Instance.Write(new LogException(e, "TimeoutResource:UnsetTimeout", LogSeverity.Error));
+        return;
       }
-      await Task.CompletedTask;
+      await Save();
     }
 
     private async Task UnknownUnset(ulong gid, ulong uid)

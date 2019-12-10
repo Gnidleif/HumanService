@@ -23,7 +23,7 @@ namespace HumanService
       [Command]
       public async Task GetSettings()
       {
-        var list = new AnnounceResource().GetAnnouncements(Context.Guild.Id);
+        var list = AnnounceResource.Instance.GetAnnouncements(Context.Guild.Id);
         if (list == null)
         {
           var prefix = new Config().Bot.Guilds[Context.Guild.Id].Prefix;
@@ -57,14 +57,13 @@ namespace HumanService
       [Command("channel"), Alias("ch")]
       public async Task EditChannel(IChannel channel)
       {
-        var announce = new AnnounceResource();
         var severity = LogSeverity.Info;
         string reply;
-        if (announce.Push(Context.Guild.Id, channel.Id) || announce.SetChannel(Context.Guild.Id, channel.Id))
+        if (AnnounceResource.Instance.Push(Context.Guild.Id, channel.Id) || AnnounceResource.Instance.SetChannel(Context.Guild.Id, channel.Id))
         {
           reply = SuccessMsg($"Successfully set guild announcement feature to channel <#{channel.Id}>");
           _ = ReplyAsync(reply);
-          _ = announce.Save();
+          await AnnounceResource.Instance.Save();
         }
         else
         {
@@ -74,17 +73,14 @@ namespace HumanService
         }
 
         _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, reply, "Settings:Announce:EditChannel", severity));
-
-        await Task.CompletedTask;
       }
 
       [Command("enable"), Alias("e")]
       public async Task EditState(string name, bool state)
       {
-        var announce = new AnnounceResource();
         var severity = LogSeverity.Info;
         string reply;
-        if (announce.SetState(Context.Guild.Id, name, state))
+        if (AnnounceResource.Instance.SetState(Context.Guild.Id, name, state))
         {
           reply = SuccessMsg("Successfully " + (state ? "enabled" : "disabled") + $" the **{name}** announcement");
           _ = ReplyAsync(reply);
@@ -104,14 +100,13 @@ namespace HumanService
       [Command("message"), Alias("msg")]
       public async Task EditMsg(string name, [Remainder] string msg)
       {
-        var announce = new AnnounceResource();
         var severity = LogSeverity.Info;
         string reply;
-        if (announce.SetMessage(Context.Guild.Id, name, msg))
+        if (AnnounceResource.Instance.SetMessage(Context.Guild.Id, name, msg))
         {
           reply = SuccessMsg($"Successfully edited the **{name}** announcement message");
           _ = ReplyAsync(reply);
-          _ = announce.Save();
+          await AnnounceResource.Instance.Save();
         }
         else
         {
@@ -121,8 +116,6 @@ namespace HumanService
         }
 
         _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, reply, "Settings:Announce:EditMsg", severity));
-
-        await Task.CompletedTask;
       }
     }
 
@@ -177,12 +170,11 @@ namespace HumanService
           }
           cfg.Bot.Guilds[Context.Guild.Id].Welcome.BaseRole = baseRole.Id;
         }
-        _ = cfg.Save();
         var msg = SuccessMsg("Successfully " + (state ? "enabled" : "disabled") + " welcome functionality!");
         _ = ReplyAsync(msg);
         _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, msg, "Settings:Welcome:SetState"));
 
-        await Task.CompletedTask;
+        await cfg.Save();
       }
 
       [Command("time"), Alias("t")]
@@ -195,13 +187,12 @@ namespace HumanService
         {
           cfg.Bot.Guilds[Context.Guild.Id].Welcome.Enabled = false;
         }
-        _ = cfg.Save();
 
         var msg = SuccessMsg($"Successfully set welcome time to **{time} minutes**");
         _ = ReplyAsync(msg);
         _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, msg, "Settings:Welcome:SetTime"));
 
-        await Task.CompletedTask;
+        await cfg.Save();
       }
 
       [Command("baserole"), Alias("br")]
@@ -220,14 +211,12 @@ namespace HumanService
         {
           var cfg = new Config();
           cfg.Bot.Guilds[Context.Guild.Id].Welcome.BaseRole = role.Id;
-          _ = cfg.Save();
           reply = SuccessMsg($"Successfully set base role to **{role.Name}**");
           _ = ReplyAsync(reply);
+          await cfg.Save();
         }
 
         _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, reply, "Settings:Welcome:SetBaseRole", severity));
-
-        await Task.CompletedTask;
       }
 
       [Command("message"), Alias("m")]
@@ -236,13 +225,12 @@ namespace HumanService
       {
         var cfg = new Config();
         cfg.Bot.Guilds[Context.Guild.Id].Welcome.Message = message;
-        _ = cfg.Save();
         var reply = SuccessMsg(!string.IsNullOrEmpty(message) ? $"Successfully set new message to: '{message}'" : "A welcome message is no longer sent");
 
         _ = ReplyAsync(reply);
         _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, reply, "Settings:Welcome:SetMessage"));
 
-        await Task.CompletedTask;
+        await cfg.Save();
       }
     }
 

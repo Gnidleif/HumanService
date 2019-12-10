@@ -9,22 +9,6 @@ namespace HumanService.Administration
   [RequireContext(ContextType.Guild)]
   public class Administration : ModuleBase<SocketCommandContext>
   {
-    #region Owner
-
-    [Command("owner"), Alias("own")]
-    public async Task OwnMessage()
-    {
-      var cfg = new Config();
-      if (Context.User.Id == cfg.Bot.Owner)
-      {
-        _ = UserExtensions.SendMessageAsync(Context.User, "Hello, master");
-        _ = Logger.Instance.Write(new LogMessage("Master requested owner function", "Administration:OwnMessage"));
-      }
-      await Task.CompletedTask;
-    }
-
-    #endregion
-
     #region Basic
 
     [Command("kick"), Alias("k")]

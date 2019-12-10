@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using HumanService.Announcement;
 using HumanService.Timeout;
 using System;
 using System.Collections.Generic;
@@ -30,6 +31,8 @@ namespace HumanService
         LogLevel = Logger.Instance.Level,
         ExclusiveBulkDelete = true,
       });
+
+      AnnounceResource.Instance.Initialize();
 
       Global.Client.Log += ClientLog;
       Global.Client.Ready += ClientReady;
@@ -74,7 +77,7 @@ namespace HumanService
       if (wCfg.Time > 0)
       {
         await TimeoutResource.Instance.SetTimeout(arg, wCfg.Time, new List<ulong> { baseRole.Id });
-        _ = TimeoutResource.Instance.Save();
+        await TimeoutResource.Instance.Save();
         if (!string.IsNullOrEmpty(wCfg.Message))
         {
           _ = UserExtensions.SendMessageAsync(arg, wCfg.Message);
@@ -106,13 +109,11 @@ namespace HumanService
         _ = Logger.Instance.Write(new LogException(e, "HumanService:ClientStart"));
         return false;
       }
-      await Global.WriteOwner("Bot started");
       return true;
     }
 
     private async Task<bool> ClientStop()
     {
-      await Global.WriteOwner("Bot stopped");
       try
       {
         await Global.Client.LogoutAsync();
@@ -142,11 +143,11 @@ namespace HumanService
       }
       catch (Exception e)
       {
-        await Logger.Instance.Write(new LogException(e, "HumanService:ClientReady"));
+        _ = Logger.Instance.Write(new LogException(e, "HumanService:ClientReady"));
       }
       finally
       {
-        c.Save();
+        await c.Save();
       }
     }
 
