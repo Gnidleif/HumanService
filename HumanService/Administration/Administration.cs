@@ -126,6 +126,7 @@ namespace HumanService.Administration
       embed.WithAuthor(user.Nickname ?? user.Username, user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl());
       embed.WithDescription($"User {action}");
       embed.AddField("Judge", Context.User.Username, true);
+
       if (!string.IsNullOrEmpty(reason))
       {
         embed.AddField("Reason", reason, true);
@@ -135,11 +136,11 @@ namespace HumanService.Administration
         reason = "None specified";
       }
 
-      _ = ReplyAsync("", false, embed.Build());
-      _ = UserExtensions.SendMessageAsync(user, $"You have been {action} from {Context.Guild.Name}, reason: {reason}");
-      _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, $"{user.Username} was {action}", "Administration:AdminReply"));
+      embed.WithFooter(Global.FormatTime());
 
-      await Task.CompletedTask;
+      await ReplyAsync("", false, embed.Build());
+      await UserExtensions.SendMessageAsync(user, $"You have been {action} from {Context.Guild.Name}, reason: {reason}");
+      await Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, $"{user.Username} was {action}", "Administration:AdminReply"));
     }
 
     private async Task<IUserMessage> SuccessReply(string msg) => await ReplyAsync($":white_check_mark: {msg}");

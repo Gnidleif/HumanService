@@ -33,6 +33,7 @@ namespace HumanService
       });
 
       AnnounceResource.Instance.Initialize();
+      TimeoutResource.Instance.Initialize();
 
       Global.Client.Log += ClientLog;
       Global.Client.Ready += ClientReady;
@@ -68,19 +69,19 @@ namespace HumanService
 
     private async Task ClientUserJoined(SocketGuildUser arg)
     {
-      var wCfg = new Config().Bot.Guilds[arg.Guild.Id].Welcome;
-      if (!wCfg.Enabled)
+      var cfg = new Config().Bot.Guilds[arg.Guild.Id].Welcome;
+      if (!cfg.Enabled)
       {
         return;
       }
-      var baseRole = arg.Guild.Roles.First(x => x.Id == wCfg.BaseRole);
-      if (wCfg.Time > 0)
+      var baseRole = arg.Guild.Roles.First(x => x.Id == cfg.BaseRole);
+      if (cfg.Time > 0)
       {
-        await TimeoutResource.Instance.SetTimeout(arg, wCfg.Time, new List<ulong> { baseRole.Id });
-        await TimeoutResource.Instance.Save();
-        if (!string.IsNullOrEmpty(wCfg.Message))
+        await TimeoutResource.Instance.SetTimeout(arg, cfg.Time, new List<ulong> { baseRole.Id });
+        _ = Logger.Instance.Write(new LogCommand(arg, arg.Guild, $"Initial timeout({cfg.Time})", "HumanService:ClientUserJoined"));
+        if (!string.IsNullOrEmpty(cfg.Message))
         {
-          _ = UserExtensions.SendMessageAsync(arg, wCfg.Message);
+          _ = UserExtensions.SendMessageAsync(arg, cfg.Message);
         }
       }
       else

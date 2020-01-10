@@ -19,6 +19,10 @@ namespace HumanService.Timeout
 
     private TimeoutResource()
     {
+    }
+
+    public void Initialize()
+    {
       var temp = new Dictionary<ulong, Dictionary<ulong, Info>>();
       if (File.Exists(Path) ? JsonUtil.TryRead(Path, out temp) : JsonUtil.TryWrite(Path, temp))
       {
@@ -123,6 +127,7 @@ namespace HumanService.Timeout
           _ = Logger.Instance.Write(new LogException(e, "TimeoutResource:SetTimeout", LogSeverity.Error));
         }
       }
+      await Save();
     }
 
     public async Task UnsetTimeout(IGuildUser user)
@@ -145,6 +150,7 @@ namespace HumanService.Timeout
         _ = Logger.Instance.Write(new LogException(e, "TimeoutResource:UnsetTimeout", LogSeverity.Error));
         return;
       }
+      Pop(user.GuildId, user.Id);
       await Save();
     }
 
