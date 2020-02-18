@@ -22,7 +22,7 @@ namespace HumanService.Administration
       }
       catch (Discord.Net.HttpException e)
       {
-        _ = Logger.Instance.Write(new LogException(e, "Administration:KickUser", LogSeverity.Error));
+        _ = Logger.Instance.WriteAsync(new LogException(e, "Administration:KickUser", LogSeverity.Error));
         _ = FailReply(e.Message);
         return;
       }
@@ -41,7 +41,7 @@ namespace HumanService.Administration
       }
       catch (Discord.Net.HttpException e)
       {
-        _ = Logger.Instance.Write(new LogException(e, "Administration:BanUser", LogSeverity.Error));
+        _ = Logger.Instance.WriteAsync(new LogException(e, "Administration:BanUser", LogSeverity.Error));
         _ = FailReply(e.Message);
         return;
       }
@@ -58,7 +58,7 @@ namespace HumanService.Administration
       var ch = Context.Channel as ITextChannel;
       _ = ch.DeleteMessagesAsync(await messagesTask);
 
-      _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, $"Purge({count}) at {Context.Channel.Name}", "Administration:PurgeChannel"));
+      _ = Logger.Instance.WriteAsync(new LogCommand(Context.User, Context.Guild, $"Purge({count}) at {Context.Channel.Name}", "Administration:PurgeChannel"));
       var m = await SuccessReply($"Successfully removed up to {count} messages");
       await Task.Delay(5000);
       _ = m.DeleteAsync();
@@ -91,7 +91,7 @@ namespace HumanService.Administration
         }
         catch (Exception e)
         {
-          _ = Logger.Instance.Write(new LogException(e, "Administration:Timeout:TimeoutUser", LogSeverity.Error));
+          _ = Logger.Instance.WriteAsync(new LogException(e, "Administration:Timeout:TimeoutUser", LogSeverity.Error));
           _ = UserExtensions.SendMessageAsync(Context.User, e.Message);
           return;
         }
@@ -112,7 +112,7 @@ namespace HumanService.Administration
 
         _ = ReplyAsync("", false, reply.Build());
         _ = UserExtensions.SendMessageAsync(user, $"You have been set on timeout for {minutes} minutes by **{Context.User.Username}**, reason: **{reason}**");
-        _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, $"{user.Username} set on timeout({minutes})", "Administration:SetTimeout"));
+        _ = Logger.Instance.WriteAsync(new LogCommand(Context.User, Context.Guild, $"{user.Username} set on timeout({minutes}), reason: {reason}", "Administration:SetTimeout"));
       }
     }
 
@@ -140,7 +140,7 @@ namespace HumanService.Administration
 
       await ReplyAsync("", false, embed.Build());
       await UserExtensions.SendMessageAsync(user, $"You have been {action} from {Context.Guild.Name}, reason: {reason}");
-      await Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, $"{user.Username} was {action}", "Administration:AdminReply"));
+      await Logger.Instance.WriteAsync(new LogCommand(Context.User, Context.Guild, $"{user.Username} was {action}", "Administration:AdminReply"));
     }
 
     private async Task<IUserMessage> SuccessReply(string msg) => await ReplyAsync($":white_check_mark: {msg}");

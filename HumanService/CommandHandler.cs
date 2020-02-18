@@ -4,6 +4,7 @@ using HumanService.TypeReaders;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace HumanService
 {
@@ -46,16 +47,25 @@ namespace HumanService
       var guildCfg = new Config().Bot.Guilds[ctx.Guild.Id];
       if (msg.HasStringPrefix(guildCfg.Prefix, ref argPos) || msg.HasMentionPrefix(Global.Client.CurrentUser, ref argPos))
       {
-        _ = ctx.Message.DeleteAsync();
         var result = await Service.ExecuteAsync(ctx, argPos, null);
         if (!result.IsSuccess)
         {
           if (result.Error != CommandError.UnknownCommand)
           {
-            _ = Logger.Instance.Write(new LogMessage($"Message: {msg.Content} | Error: {result.ErrorReason}", "CommandHandler:ClientMessageReceived", Discord.LogSeverity.Error));
+            _ = Logger.Instance.WriteAsync(new LogMessage($"Message: {msg.Content} | Error: {result.ErrorReason}", "CommandHandler:ClientMessageReceived", Discord.LogSeverity.Error));
           }
           _ = Discord.UserExtensions.SendMessageAsync(ctx.User, result.ErrorReason);
         }
+        var tick = new Timer
+        {
+          Interval = 10000,
+          AutoReset = false,
+          Enabled = true,
+        };
+        tick.Elapsed += (object sender, ElapsedEventArgs e) =>
+        {
+          _ = ctx.Message.DeleteAsync();
+        };
       }
     }
   }

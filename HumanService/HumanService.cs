@@ -24,7 +24,7 @@ namespace HumanService
     protected async Task OnStartAsync()
     {
       Logger.Instance.Level = LogSeverity.Info;
-      _ = Logger.Instance.Write(new LogMessage("Service started", "HumanService:OnStart"));
+      _ = Logger.Instance.WriteAsync(new LogMessage("Service started", "HumanService:OnStart"));
 
       Global.Client = new DiscordSocketClient(new DiscordSocketConfig
       {
@@ -49,19 +49,19 @@ namespace HumanService
 
     protected override void OnStop()
     {
-      _ = Logger.Instance.Write(new LogMessage("Service stopped", "HumanService:OnStop"));
+      _ = Logger.Instance.WriteAsync(new LogMessage("Service stopped", "HumanService:OnStop"));
       ClientStop().GetAwaiter().GetResult();
     }
 
     protected override void OnPause()
     {
-      _ = Logger.Instance.Write(new LogMessage("Service paused", "HumanService:OnPause"));
+      _ = Logger.Instance.WriteAsync(new LogMessage("Service paused", "HumanService:OnPause"));
       ClientStop().GetAwaiter().GetResult();
     }
 
     protected override void OnContinue()
     {
-      _ = Logger.Instance.Write(new LogMessage("Service continued", "HumanService:OnContinue"));
+      _ = Logger.Instance.WriteAsync(new LogMessage("Service continued", "HumanService:OnContinue"));
       ClientStart().GetAwaiter().GetResult();
     }
 
@@ -78,7 +78,7 @@ namespace HumanService
       if (cfg.Time > 0)
       {
         await TimeoutResource.Instance.SetTimeout(arg, cfg.Time, new List<ulong> { baseRole.Id });
-        _ = Logger.Instance.Write(new LogCommand(arg, arg.Guild, $"Initial timeout({cfg.Time})", "HumanService:ClientUserJoined"));
+        _ = Logger.Instance.WriteAsync(new LogCommand(arg, arg.Guild, $"Initial timeout({cfg.Time})", "HumanService:ClientUserJoined"));
         if (!string.IsNullOrEmpty(cfg.Message))
         {
           _ = UserExtensions.SendMessageAsync(arg, cfg.Message);
@@ -92,7 +92,7 @@ namespace HumanService
         }
         catch (Exception e)
         {
-          _ = Logger.Instance.Write(new LogException(e, "HumanService:ClientUserJoined"));
+          _ = Logger.Instance.WriteAsync(new LogException(e, "HumanService:ClientUserJoined"));
         }
       }
     }
@@ -107,7 +107,7 @@ namespace HumanService
       }
       catch (Discord.Net.HttpException e)
       {
-        _ = Logger.Instance.Write(new LogException(e, "HumanService:ClientStart"));
+        _ = Logger.Instance.WriteAsync(new LogException(e, "HumanService:ClientStart"));
         return false;
       }
       return true;
@@ -122,7 +122,7 @@ namespace HumanService
       }
       catch (Discord.Net.HttpException e)
       {
-        _ = Logger.Instance.Write(new LogException(e, "HumanService:ClientStart"));
+        _ = Logger.Instance.WriteAsync(new LogException(e, "HumanService:ClientStart"));
         return false;
       }
       return true;
@@ -144,7 +144,7 @@ namespace HumanService
       }
       catch (Exception e)
       {
-        _ = Logger.Instance.Write(new LogException(e, "HumanService:ClientReady"));
+        _ = Logger.Instance.WriteAsync(new LogException(e, "HumanService:ClientReady"));
       }
       finally
       {
@@ -156,11 +156,11 @@ namespace HumanService
     {
       if (arg.Exception != null)
       {
-        await Logger.Instance.Write(new LogException(arg.Exception, arg.Source, arg.Severity));
+        await Logger.Instance.WriteAsync(new LogException(arg.Exception, arg.Source, arg.Severity));
       }
       else
       {
-        await Logger.Instance.Write(new LogMessage(arg.Message, arg.Source, arg.Severity));
+        await Logger.Instance.WriteAsync(new LogMessage(arg.Message, arg.Source, arg.Severity));
       }
     }
 

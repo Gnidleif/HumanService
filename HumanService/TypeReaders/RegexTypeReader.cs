@@ -19,7 +19,7 @@ namespace HumanService.TypeReaders
       }
       catch (Exception e)
       {
-        _ = Logger.Instance.Write(new LogException(e, "RegexTypeReader:ReadAsync", Discord.LogSeverity.Error));
+        _ = Logger.Instance.WriteAsync(new LogException(e, "RegexTypeReader:ReadAsync", Discord.LogSeverity.Error));
       }
       return Task.FromResult(TypeReaderResult.FromError(CommandError.ParseFailed, "Failed to parse Regex."));
     }

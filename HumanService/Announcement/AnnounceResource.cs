@@ -110,7 +110,7 @@ namespace HumanService.Announcement
           await ch.SendMessageAsync(string.Format(ev.Item1, arg.Mention));
         }
       }
-      _ = Logger.Instance.Write(new LogCommand(arg, arg.Guild, "User joined", "AnnounceResource:Client_UserJoined"));
+      _ = Logger.Instance.WriteAsync(new LogCommand(arg, arg.Guild, "User joined", "AnnounceResource:Client_UserJoined"));
     }
 
     private async Task Client_UserLeft(SocketGuildUser arg)
@@ -125,7 +125,7 @@ namespace HumanService.Announcement
           await ch.SendMessageAsync(string.Format(ev.Item1, arg.Username));
         }
       }
-      _ = Logger.Instance.Write(new LogCommand(arg, arg.Guild, "User left", "AnnounceResource:Client_UserLeft"));
+      _ = Logger.Instance.WriteAsync(new LogCommand(arg, arg.Guild, "User left", "AnnounceResource:Client_UserLeft"));
     }
 
     private class Info

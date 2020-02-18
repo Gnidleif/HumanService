@@ -32,7 +32,7 @@ namespace HumanService
 
     #region Public methods
 
-    public async Task Write(IMessage data)
+    public async Task WriteAsync(IMessage data)
     {
       if (data.Code <= Level)
       {
@@ -46,7 +46,7 @@ namespace HumanService
       }
     }
 
-    public async Task<string> Read(DateTime? date = null)
+    public async Task<string> ReadAsync(DateTime? date = null)
     {
       var path = GetFilePath(date);
       if (!File.Exists(path))

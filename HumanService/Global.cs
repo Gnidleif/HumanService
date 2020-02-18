@@ -9,14 +9,18 @@ namespace HumanService
 {
   public static class Global
   {
+    private static string path;
     internal static string Resources
     {
       get
       {
-        var path = AppDomain.CurrentDomain.BaseDirectory + "\\Resources";
-        if (!Directory.Exists(path))
+        if (string.IsNullOrEmpty(path))
         {
-          Directory.CreateDirectory(path);
+          path = AppDomain.CurrentDomain.BaseDirectory + "\\Resources";
+          if (!Directory.Exists(path))
+          {
+            Directory.CreateDirectory(path);
+          }
         }
         return path;
       }
@@ -38,7 +42,7 @@ namespace HumanService
       }
       catch (NullReferenceException e)
       {
-        _ = Logger.Instance.Write(new LogException(e, "Global:WriteOwner", LogSeverity.Error));
+        _ = Logger.Instance.WriteAsync(new LogException(e, "Global:WriteOwner", LogSeverity.Error));
       }
     }
   }

@@ -30,7 +30,7 @@ namespace HumanService.General
       reply.WithDescription(result);
       reply.WithFooter(Global.FormatTime());
 
-      _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, result, "General:Text:ToSpongebob"));
+      _ = Logger.Instance.WriteAsync(new LogCommand(Context.User, Context.Guild, result, "General:Text:ToSpongebob"));
       await ReplyAsync("", false, reply.Build());
     }
 

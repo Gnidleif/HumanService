@@ -29,7 +29,7 @@ namespace HumanService
           var prefix = new Config().Bot.Guilds[Context.Guild.Id].Prefix;
           var msg = $"No announce settings configured for guild, run '{prefix}settings announce channel <channel id> to get started'";
           _ = UserExtensions.SendMessageAsync(Context.User, FailMsg(msg));
-          _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, msg, "Settings:Announce:GetSettings", LogSeverity.Error));
+          _ = Logger.Instance.WriteAsync(new LogCommand(Context.User, Context.Guild, msg, "Settings:Announce:GetSettings", LogSeverity.Error));
           return;
         }
 
@@ -48,7 +48,7 @@ namespace HumanService
           }
         }
 
-        _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, "Called", "Settings:Announce:GetSettings"));
+        _ = Logger.Instance.WriteAsync(new LogCommand(Context.User, Context.Guild, "Called", "Settings:Announce:GetSettings"));
         _ = ReplyAsync("", false, reply.Build());
         await Task.CompletedTask;
       }
@@ -72,7 +72,7 @@ namespace HumanService
           _ = UserExtensions.SendMessageAsync(Context.User, reply);
         }
 
-        _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, reply, "Settings:Announce:EditChannel", severity));
+        _ = Logger.Instance.WriteAsync(new LogCommand(Context.User, Context.Guild, reply, "Settings:Announce:EditChannel", severity));
       }
 
       [Command("enable"), Alias("e")]
@@ -92,7 +92,7 @@ namespace HumanService
           _ = UserExtensions.SendMessageAsync(Context.User, reply);
         }
 
-        _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, reply, "Settings:Announce:EditState", severity));
+        _ = Logger.Instance.WriteAsync(new LogCommand(Context.User, Context.Guild, reply, "Settings:Announce:EditState", severity));
 
         await Task.CompletedTask;
       }
@@ -115,7 +115,7 @@ namespace HumanService
           _ = UserExtensions.SendMessageAsync(Context.User, reply);
         }
 
-        _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, reply, "Settings:Announce:EditMsg", severity));
+        _ = Logger.Instance.WriteAsync(new LogCommand(Context.User, Context.Guild, reply, "Settings:Announce:EditMsg", severity));
       }
     }
 
@@ -143,13 +143,13 @@ namespace HumanService
         }
         catch (Exception e)
         {
-          _ = Logger.Instance.Write(new LogException(e, "Settings:Welcome:GetWelcome", LogSeverity.Error));
+          _ = Logger.Instance.WriteAsync(new LogException(e, "Settings:Welcome:GetWelcome", LogSeverity.Error));
           _ = UserExtensions.SendMessageAsync(Context.User, e.Message);
           return;
         }
 
         _ = ReplyAsync("", false, reply.Build());
-        _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, "Called", "Settings:Welcome:GetWelcome"));
+        _ = Logger.Instance.WriteAsync(new LogCommand(Context.User, Context.Guild, "Called", "Settings:Welcome:GetWelcome"));
         await Task.CompletedTask;
       }
 
@@ -172,7 +172,7 @@ namespace HumanService
         }
         var msg = SuccessMsg("Successfully " + (state ? "enabled" : "disabled") + " welcome functionality!");
         _ = ReplyAsync(msg);
-        _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, msg, "Settings:Welcome:SetState"));
+        _ = Logger.Instance.WriteAsync(new LogCommand(Context.User, Context.Guild, msg, "Settings:Welcome:SetState"));
 
         await cfg.Save();
       }
@@ -190,7 +190,7 @@ namespace HumanService
 
         var msg = SuccessMsg($"Successfully set welcome time to **{time} minutes**");
         _ = ReplyAsync(msg);
-        _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, msg, "Settings:Welcome:SetTime"));
+        _ = Logger.Instance.WriteAsync(new LogCommand(Context.User, Context.Guild, msg, "Settings:Welcome:SetTime"));
 
         await cfg.Save();
       }
@@ -216,7 +216,7 @@ namespace HumanService
           await cfg.Save();
         }
 
-        _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, reply, "Settings:Welcome:SetBaseRole", severity));
+        _ = Logger.Instance.WriteAsync(new LogCommand(Context.User, Context.Guild, reply, "Settings:Welcome:SetBaseRole", severity));
       }
 
       [Command("message"), Alias("m")]
@@ -228,7 +228,7 @@ namespace HumanService
         var reply = SuccessMsg(!string.IsNullOrEmpty(message) ? $"Successfully set new message to: '{message}'" : "A welcome message is no longer sent");
 
         _ = ReplyAsync(reply);
-        _ = Logger.Instance.Write(new LogCommand(Context.User, Context.Guild, reply, "Settings:Welcome:SetMessage"));
+        _ = Logger.Instance.WriteAsync(new LogCommand(Context.User, Context.Guild, reply, "Settings:Welcome:SetMessage"));
 
         await cfg.Save();
       }

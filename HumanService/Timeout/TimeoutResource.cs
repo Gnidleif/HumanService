@@ -109,7 +109,7 @@ namespace HumanService.Timeout
         }
         catch (Exception e)
         {
-          _ = Logger.Instance.Write(new LogException(e, "TimeoutResource:SetTimeout", LogSeverity.Error));
+          _ = Logger.Instance.WriteAsync(new LogException(e, "TimeoutResource:SetTimeout", LogSeverity.Error));
         }
       }
       else
@@ -124,7 +124,7 @@ namespace HumanService.Timeout
         }
         catch (Exception e)
         {
-          _ = Logger.Instance.Write(new LogException(e, "TimeoutResource:SetTimeout", LogSeverity.Error));
+          _ = Logger.Instance.WriteAsync(new LogException(e, "TimeoutResource:SetTimeout", LogSeverity.Error));
         }
       }
       await Save();
@@ -143,11 +143,11 @@ namespace HumanService.Timeout
           .Where(x => !x.IsManaged && x != user.Guild.EveryoneRole)
           .ToList();
         _ = user.AddRolesAsync(roles);
-        _ = Logger.Instance.Write(new LogCommand(user, user.Guild, "Timeout expired", "TimeoutResource:UnsetTimeout"));
+        _ = Logger.Instance.WriteAsync(new LogCommand(user, user.Guild, "Timeout expired", "TimeoutResource:UnsetTimeout"));
       }
       catch (Exception e)
       {
-        _ = Logger.Instance.Write(new LogException(e, "TimeoutResource:UnsetTimeout", LogSeverity.Error));
+        _ = Logger.Instance.WriteAsync(new LogException(e, "TimeoutResource:UnsetTimeout", LogSeverity.Error));
         return;
       }
       Pop(user.GuildId, user.Id);
